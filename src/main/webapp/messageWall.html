@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表白墙</title>
+</head>
+<body>
+    <div class="container">
+        <h1>表白墙</h1>
+        <p>输入后点击提交, 会将信息显示在表格中</p>
+        <div class="row">
+        <span>谁: </span>
+        <input class="edit" type="text">
+        </div>
+        <div class="row">
+        <span>对谁: </span>
+        <input class="edit" type="text">
+        </div>
+        <div class="row">
+        <span>说什么: </span>
+        <input class="edit" type="text">
+        </div>
+        <div class="row">
+        <input type="button" value="提交" class="submit">
+        </div>
+        </div>
+        <style>
+        * {
+        margin: 0;
+        padding: 0;
+        }
+        .container {
+        width: 400px;
+        margin: 0 auto;
+        }
+        h1 {
+        text-align: center;
+        padding: 20px 0;
+        }
+        p {
+        color: #666;
+        text-align: center;
+        font-size: 14px;
+        padding: 10px 0;
+        }
+        .row {
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        }
+        span {
+        width: 100px;
+        line-height: 40px;
+        }
+        .edit {
+        width: 200px;
+        height: 30px;
+        }
+        .submit {
+        width: 304px;
+        height: 40px;
+        color: white;
+        background-color: orange;
+        border: none;
+        }
+        .submit:active {
+        background-color: #666;
+        }
+    </style>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        // 给点击按钮注册点击事件
+    var submit = document.querySelector('.submit');
+    submit.onclick = function () {
+// 1. 获取到编辑框内容
+var edits = document.querySelectorAll('.edit');
+var from = edits[0].value;
+var to = edits[1].value;
+var message = edits[2].value;
+console.log(from + "," + to + "," + message);
+if (from == '' || to == '' || message == '') {
+return;
+}
+// 2. 构造 html 元素
+var row = document.createElement('div');
+row.className = 'row';
+row.innerHTML = from + '对' + to + '说: ' + message;
+// 3. 把构造好的元素添加进去
+var container = document.querySelector('.container');
+container.appendChild(row);
+// 4. 同时清理之前输入框的内容
+for (var i = 0; i < 3; i++) {
+edits[i].value = '';
+}
+let data={
+    from: from,
+    to: to,
+    message: message
+};
+// 5.点击发送按钮，给服务器发个post请求
+$.ajax({
+    type: 'post',
+    //相对路径
+    url: 'message',
+    data: JSON.stringify(data),
+    contentType: "application/json;charset=utf8",
+    success: function(body){
+        console.log("提交数据成功");
+    }
+})
+}
+// 直接写在script标签里的代码，都是在页面加载的时候执行的
+// 来获取服务器的数据
+function getMessages(){
+    $.ajax({
+        type: 'get' ,
+        url: 'message' ,
+        success: function(body){
+            // body就是相应的body内容,json数组
+            // jquery会自动把json数组解析成js对象数组
+            // 但是有个前提条件：响应的Content-Type是application/json
+            let container=document.querySelector('.container');
+            for(let i=0;i<body.length;i++){
+                let message=body[i];
+                // 根据这个元素构造一个div.row,来容纳数据
+                let row=document.createElement('div');
+                row.className = 'row';
+                row.innerHTML = message.from + '对' + message.to + '说: ' + message.message;
+                container.appendChild(row);
+            }
+        }
+    })
+}
+getMessages();
+    </script>
+</body>
+</html>
